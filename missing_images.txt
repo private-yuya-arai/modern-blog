@@ -1,0 +1,33 @@
+Checking images in src\posts...
+
+Found 30 missing images:
+src\posts\chapter1-probability-basics.md -> /images/probability.png
+src\posts\chapter10-statistical-modeling.md -> /images/modeling.png
+src\posts\chapter11-glm.md -> /images/glm.png
+src\posts\chapter12-nonparametric-tests.md -> /images/nonparametric.png
+src\posts\chapter13-bayesian-basics.md -> /images/bayesian.png
+src\posts\chapter14-experimental-design.md -> /images/doe.png
+src\posts\chapter15-timeseries-advanced.md -> /images/timeseries-advanced.png
+src\posts\chapter16-stochastic-processes.md -> /images/markov.png
+src\posts\chapter17-sampling-theory.md -> /images/sampling.png
+src\posts\chapter18-quality-control.md -> /images/qc.png
+src\posts\chapter19-information-entropy.md -> /images/entropy.png
+src\posts\chapter2-distributions.md -> /images/distributions.png
+src\posts\chapter20-applied-statistics.md -> /images/data-analysis.png
+src\posts\chapter21-high-dimensional-data.md -> /images/high-dim.png
+src\posts\chapter22-sparse-modeling.md -> /images/sparse.png
+src\posts\chapter23-mixture-models.md -> /images/mixture.png
+src\posts\chapter24-missing-data.md -> /images/missing-data.png
+src\posts\chapter25-robust-statistics.md -> /images/robust.png
+src\posts\chapter26-causal-inference.md -> /images/causal.png
+src\posts\chapter27-hierarchical-bayes.md -> /images/hierarchical.png
+src\posts\chapter28-bootstrap-resampling.md -> /images/bootstrap.png
+src\posts\chapter29-model-diagnosis.md -> /images/validation.png
+src\posts\chapter3-sampling-distributions.md -> /images/limit-theorems.png
+src\posts\chapter30-ethics-reproducibility.md -> /images/ethics.png
+src\posts\chapter4-estimation.md -> /images/estimation.png
+src\posts\chapter5-hypothesis-testing.md -> /images/hypothesis.png
+src\posts\chapter6-anova.md -> /images/anova.png
+src\posts\chapter7-regression.md -> /images/regression.png
+src\posts\chapter8-multivariate-basics.md -> /images/multivariate.png
+src\posts\chapter9-timeseries-basics.md -> /images/timeseries.png

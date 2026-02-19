@@ -1,0 +1,106 @@
+---
+slug: "sparse-modeling-chapter22"
+title: "スパースモデリング：「ゼロ」の美学"
+date: "2026-01-04"
+category: "統計学"
+tags: ["統計検定準一級", "Python", "R", "スパースモデリング", "Lasso", "圧縮センシング"]
+excerpt: "「世界はシンプルである」。少数の変数だけで現象を説明するスパースモデリング。MRIの高速化やブラックホール撮影にも使われた、L1ノルムの魔法とは？"
+image: "/images/sparse.png"
+---
+
+## この知識はいつ使うの？
+
+*   **要因特定**: 売上に影響する要因が100個候補があるが、本当に大事な5個だけを抜き出したいとき。
+*   **画像処理**: ノイズだらけの画像から、きれいな元の画像を復元したいとき（圧縮センシング）。
+*   **解釈性向上**: 複雑すぎるAIモデルではなく、人間が理解できるシンプルなルールを作りたいとき。
+
+## L1ノルムとL2ノルム
+
+機械学習における「ペナルティ（正則化項）」の与え方には2つの流派があります。
+
+```mermaid
+graph TD
+    Start["誤差を小さくしたい"]
+    
+    Start --> L2["L2正則化 (Ridge)<br>二乗の和を足す"]
+    Start --> L1["L1正則化 (Lasso)<br>絶対値の和を足す"]
+    
+    L2 --> Shape2["円形の制約"]
+    L1 --> Shape1["ひし形の制約<br>(角がある)"]
+    
+    Shape2 --> Result2["全体的に小さくする<br>(0にはならない)"]
+    Shape1 --> Result1["角に当たりやすい<br>→ 係数がちょうど0になる！<br>(スパース化)"]
+```
+
+### なぜL1だと0になるのか？（直感的理解）
+正則化の等高線（ひし形）と、誤差の等高線（楕円）がぶつかる場所が解になります。ひし形は「角（軸上＝値が0の場所）」が尖っているので、そこでぶつかりやすいのです。
+
+## 主なスパース推定手法
+
+| 手法名 | 特徴 | 使い分け |
+| :--- | :--- | :--- |
+| **Lasso** | 基本形。不要な変数をバッサリ0にする。 | まずはこれ。変数選択をしたいとき。 |
+| **Ridge** | スパースにはならないが、安定する。 | 変数を減らしたくないとき。相関が高い変数が群れであるとき。 |
+| **Elastic Net** | LassoとRidgeのいいとこ取り。 | 変数選択しつつ、相関のある変数をグループごと残したいとき。 |
+| **Group Lasso** | 変数をグループ単位で0にする。 | 「ダミー変数セット」など、まとめて選ぶべき変数があるとき。 |
+
+## Pythonでの実装：画像のノイズ除去（Total Variation）
+
+スパースモデリングの応用として、画像のノイズ除去を行います。隣り合う画素の「差分」がスパースである（＝輪郭以外は平坦である）という仮定を使います。
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage.restoration import denoise_tv_chambolle
+from skimage import data, img_as_float, util
+
+# 画像準備
+original_img = img_as_float(data.camera())
+# ノイズを加える
+noisy_img = util.random_noise(original_img, mode='gaussian', var=0.01)
+
+# Total Variation (TV) 正則化によるノイズ除去
+# 「変化がスパースである」ことを利用して、エッジを残しつつ平滑化
+denoised_img = denoise_tv_chambolle(noisy_img, weight=0.1)
+
+# 表示
+fig, ax = plt.subplots(1, 3, figsize=(15, 5))
+ax[0].imshow(original_img, cmap='gray')
+ax[0].set_title('Original')
+ax[1].imshow(noisy_img, cmap='gray')
+ax[1].set_title('Noisy')
+ax[2].imshow(denoised_img, cmap='gray')
+ax[2].set_title('TV Denoised (Sparse)')
+plt.show()
+```
+
+## Rでの実装：glmnetによるLasso回帰
+
+Rの `glmnet` パッケージは、Lasso/Ridge/ElasticNetを高速に解くためのデファクトスタンダードです。
+
+```r
+library(glmnet)
+
+# データ準備
+data(mtcars)
+y <- mtcars$mpg
+x <- as.matrix(mtcars[, -1]) # mpg以外を説明変数に
+
+# Lasso実行 (alpha=1 はLasso, 0はRidge)
+fit <- glmnet(x, y, alpha=1)
+
+# 解パス（Solution Path）のプロット
+# ペナルティ(lambda)を強めるにつれて、係数が次々と0になって脱落していく様子
+plot(fit, xvar="lambda", label=TRUE)
+
+# 最適なlambdaをCVで探す
+cv_fit <- cv.glmnet(x, y, alpha=1)
+plot(cv_fit)
+log(cv_fit$lambda.min) # ベストなlambda
+```
+
+## まとめ
+
+*   **スパースモデリング**は、「本質は少数である」という信念に基づく技術。
+*   **Lasso (L1正則化)** を使うと、変数を自動選択でき、モデルの解釈性が上がる。
+*   画像処理や信号処理（圧縮センシング）でも、「無駄な情報を削ぎ落とす」ためのコア技術として使われている。
