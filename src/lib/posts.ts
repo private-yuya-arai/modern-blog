@@ -2,6 +2,15 @@ import matter from 'gray-matter';
 import { Post } from '../types';
 import { format, parseISO } from 'date-fns';
 
+export const normalizePath = (path: string | undefined) => {
+  if (!path) return undefined;
+  // If path starts with '/', make it relative so it works with the base URL
+  if (path.startsWith('/')) {
+    return path.slice(1);
+  }
+  return path;
+};
+
 export async function getAllPosts(): Promise<Post[]> {
   // Vite's import.meta.glob with `{ as: 'raw' }` imports files as strings.
   const modules = import.meta.glob('/src/posts/*.md', { query: '?raw', import: 'default' });
@@ -32,7 +41,7 @@ export async function getAllPosts(): Promise<Post[]> {
       excerpt: data.excerpt,
       draft: data.draft || false,
       content: content,
-      image: data.image,
+      image: normalizePath(data.image),
     }));
 
   return posts;

@@ -108,6 +108,10 @@ const PostPage: React.FC = () => {
                 return <MermaidDiagram definition={unescapedDefinition} />;
               }
 
+              import { normalizePath } from '../lib/posts';
+
+              // ... (existing code)
+
               return !inline && match ? (
                 <SyntaxHighlighter
                   children={String(children).replace(/\n$/, '')}
@@ -122,6 +126,9 @@ const PostPage: React.FC = () => {
                 </code>
               );
             },
+            img({ src, alt, ...props }: any) {
+              return <img src={normalizePath(src)} alt={alt} {...props} />;
+            }
           }}
         />
       </div>
