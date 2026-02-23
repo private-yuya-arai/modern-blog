@@ -6,6 +6,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import vscDarkPlus from 'react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus';
 import remarkGfm from 'remark-gfm';
 import mermaid from 'mermaid';
+import { normalizePath } from '../lib/posts';
 
 import './PostPage.css';
 
@@ -107,10 +108,6 @@ const PostPage: React.FC = () => {
 
                 return <MermaidDiagram definition={unescapedDefinition} />;
               }
-
-              import { normalizePath } from '../lib/posts';
-
-              // ... (existing code)
 
               return !inline && match ? (
                 <SyntaxHighlighter
