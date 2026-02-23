@@ -5,16 +5,22 @@ import Footer from './components/Footer';
 import Breadcrumbs from './components/Breadcrumbs'; // Breadcrumbsをインポート
 import './App.css';
 
+import { AIProvider } from './AIContext';
+import AIAssistant from './components/AIAssistant';
+
 const App: React.FC = () => {
   return (
-    <div className="app-container">
-      <Header />
-      <main className="main-content">
-        <Breadcrumbs /> {/* ここに配置 */}
-        <Outlet />
-      </main>
-      <Footer />
-    </div>
+    <AIProvider>
+      <div className="app-container">
+        <Header />
+        <main className="main-content">
+          <Breadcrumbs />
+          <Outlet />
+        </main>
+        <Footer />
+        <AIAssistant />
+      </div>
+    </AIProvider>
   );
 };
 

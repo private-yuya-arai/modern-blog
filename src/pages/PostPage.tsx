@@ -103,14 +103,26 @@ const robustUnescape = (text: string): string => {
   return currentText;
 };
 
+import { useAI } from '../AIContext';
+
 const PostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { posts, loading } = usePosts();
+  const { setCurrentPost, highlightedSection, setHighlightedSection } = useAI();
 
   const post = useMemo(() => {
     if (loading) return null;
     return posts.find(p => p.slug === slug);
   }, [posts, loading, slug]);
+
+  useEffect(() => {
+    setCurrentPost(post || null);
+    // 元に戻すためのタイマー
+    if (highlightedSection) {
+      const timer = setTimeout(() => setHighlightedSection(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [post, setCurrentPost, highlightedSection, setHighlightedSection]);
 
   if (loading) {
     return <div className="loading-container"><div className="spinner"></div></div>;
@@ -122,7 +134,7 @@ const PostPage: React.FC = () => {
 
   return (
     <article className="post-full">
-      <header className="post-full-header">
+      <header className={`post-full-header ${highlightedSection === 'header' ? 'ai-highlight' : ''}`}>
         {post.image && (
           <div className="post-full-image-wrapper">
             <img src={post.image} alt={post.title} className="post-full-image" />
@@ -142,7 +154,7 @@ const PostPage: React.FC = () => {
         </div>
       </header>
 
-      <div className="post-full-content">
+      <div className={`post-full-content ${highlightedSection === 'content' ? 'ai-highlight' : ''}`}>
         <ReactMarkdown
           children={post.content}
           remarkPlugins={[remarkGfm]}
@@ -161,13 +173,15 @@ const PostPage: React.FC = () => {
               }
 
               return !inline && match ? (
-                <SyntaxHighlighter
-                  children={rawContent}
-                  style={vscDarkPlus as any as SyntaxHighlighterStyle}
-                  language={match[1]}
-                  PreTag="div"
-                  {...props}
-                />
+                <div className={highlightedSection === 'code' ? 'ai-highlight-code' : ''}>
+                  <SyntaxHighlighter
+                    children={rawContent}
+                    style={vscDarkPlus as any as SyntaxHighlighterStyle}
+                    language={match[1]}
+                    PreTag="div"
+                    {...props}
+                  />
+                </div>
               ) : (
                 <code className={className} {...props}>
                   {children}
