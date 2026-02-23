@@ -1,0 +1,18 @@
+const n=`---
+slug: "draft-post"
+title: "下書きの投稿"
+date: "2025-11-15"
+category: "その他"
+tags: ["下書き", "テスト"]
+excerpt: "この投稿は下書きです。公開されたサイトには表示されません。"
+draft: true
+image: "/images/first-post.png"
+---
+
+## この投稿は下書きです
+
+この投稿は \`draft: true\` というフラグが設定されています。
+
+開発環境では表示されますが、本番環境では表示されないはずです。
+これにより、公開前に記事の内容を安全にプレビューすることができます。
+`;export{n as default};
