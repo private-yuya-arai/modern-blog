@@ -42,13 +42,16 @@ const HomePage: React.FC = () => {
     );
   }
 
-  const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE);
-  const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
-  const endIndex = startIndex + POSTS_PER_PAGE;
-  const currentPosts = posts.slice(startIndex, endIndex);
-
   // The very first post is the "Featured" post (Hero)
   const latestPost = posts[0];
+
+  // Exclude the latestPost from the list if we are on the first page to avoid duplication with Hero
+  const displayPosts = (currentPage === 1 && latestPost) ? posts.slice(1) : posts;
+
+  const totalPages = Math.ceil(displayPosts.length / POSTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+  const endIndex = startIndex + POSTS_PER_PAGE;
+  const currentPosts = displayPosts.slice(startIndex, endIndex);
 
   return (
     <div className="home-page-wrapper">
