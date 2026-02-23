@@ -5,7 +5,7 @@ date: "2025-10-19"
 category: "統計学"
 tags: ["統計検定準一級", "Python", "R", "仮説検定", "t検定", "第一種の過誤"]
 excerpt: "「有意差あり」とはどういうことか？背理法のようなロジック「仮説検定」の仕組みと、Z検定・t検定・カイ二乗検定の使い分けをチャートで整理します。"
-image: "/images/testing.png"
+image: "/images/hypothesis.png"
 ---
 
 ## この知識はいつ使うの？

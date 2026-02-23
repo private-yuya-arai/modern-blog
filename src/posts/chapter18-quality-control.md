@@ -5,7 +5,7 @@ date: "2025-12-16"
 category: "統計学"
 tags: ["統計検定準一級", "Python", "R", "品質管理", "管理図", "工程能力指数"]
 excerpt: "日本の製造業を支えてきたQC（品質管理）。「バラツキは敵だ」。異常を素早く検知する管理図の使い方と、工程の実力を測るCp/Cpk指数を解説。"
-image: "/images/quality.png"
+image: "/images/qc.png"
 ---
 
 ## この知識はいつ使うの？
