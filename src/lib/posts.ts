@@ -4,9 +4,13 @@ import { format, parseISO } from 'date-fns';
 
 export const normalizePath = (path: string | undefined) => {
   if (!path) return undefined;
-  // If path starts with '/', make it relative so it works with the base URL
+
+  // If path starts with '/', prepend the base URL (e.g., /modern-blog/)
   if (path.startsWith('/')) {
-    return path.slice(1);
+    const base = import.meta.env.BASE_URL.endsWith('/')
+      ? import.meta.env.BASE_URL.slice(0, -1)
+      : import.meta.env.BASE_URL;
+    return `${base}${path}`;
   }
   return path;
 };

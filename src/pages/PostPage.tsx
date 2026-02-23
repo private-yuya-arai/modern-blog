@@ -99,19 +99,19 @@ const PostPage: React.FC = () => {
               const match = /language-(\w+)/.exec(className || '');
               const isMermaid = match && match[1] === 'mermaid';
 
-              if (!inline && isMermaid) {
-                // Ensure text string from potential array
-                const content = Array.isArray(children) ? children.join('') : String(children);
-                // Normalize newlines (CRLF -> LF) and remove trailing newline
-                const rawContent = content.replace(/\r\n/g, '\n').replace(/\n$/, '');
-                const unescapedDefinition = unescapeHtml(rawContent);
+              // Join children accurately to avoid unintended commas or spacing
+              const rawContent = (Array.isArray(children) ? children.join('') : String(children))
+                .replace(/\r\n/g, '\n')
+                .replace(/\n$/, '');
 
+              if (!inline && isMermaid) {
+                const unescapedDefinition = unescapeHtml(rawContent);
                 return <MermaidDiagram definition={unescapedDefinition} />;
               }
 
               return !inline && match ? (
                 <SyntaxHighlighter
-                  children={String(children).replace(/\n$/, '')}
+                  children={rawContent}
                   style={vscDarkPlus as any as SyntaxHighlighterStyle}
                   language={match[1]}
                   PreTag="div"
@@ -124,6 +124,7 @@ const PostPage: React.FC = () => {
               );
             },
             img({ src, alt, ...props }: any) {
+              // Ensure src is normalized
               return <img src={normalizePath(src)} alt={alt} {...props} />;
             }
           }}
