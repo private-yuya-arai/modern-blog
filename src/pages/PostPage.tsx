@@ -119,7 +119,7 @@ const StickyNote = ({ content, date }: { content: string, date: string }) => (
 const PostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { posts, loading } = usePosts();
-  const { setCurrentPost, highlightedSection, setHighlightedSection, notes, clearNotes } = useAI();
+  const { setCurrentPost, highlightedSection, setHighlightedSection, notes } = useAI();
 
   const post = useMemo(() => {
     if (loading) return null;
@@ -132,8 +132,6 @@ const PostPage: React.FC = () => {
       const timer = setTimeout(() => setHighlightedSection(null), 3500);
       return () => clearTimeout(timer);
     }
-    // ページ遷移時に付箋をクリアする場合（仕様により検討）
-    // return () => clearNotes(); 
   }, [post, setCurrentPost, highlightedSection, setHighlightedSection]);
 
   if (loading) {
@@ -149,7 +147,7 @@ const PostPage: React.FC = () => {
       <AnimatePresence>
         {notes.length > 0 && (
           <div className="ai-notes-overlay">
-            {notes.map((note, idx) => (
+            {notes.map((note) => (
               <StickyNote key={note.id} content={note.content} date={note.date} />
             ))}
           </div>

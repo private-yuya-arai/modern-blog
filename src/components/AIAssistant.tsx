@@ -58,18 +58,38 @@ const AIAssistant: React.FC = () => {
                 const note: AINote = {
                     id: Date.now().toString(),
                     content: `${matchedKey}の解説を追記しました。`,
-                    date: new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
+                    date: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
                     target: lowerInput.includes('コード') ? 'code' : 'content'
                 };
                 addNote(note);
             }
             else if (currentPost) {
-                if (lowerInput.includes('要約') || lowerInput.includes('まとめて')) {
+                if (lowerInput.includes('要約') || lowerInput.includes('まとめて') || lowerInput.includes('概要')) {
                     response = `${currentPost.title}の内容をスキャニングして要約しました。重要なポイントは「${currentPost.excerpt}」です。`;
                     setHighlightedSection('header');
-                } else if (lowerInput.includes('コード') || lowerInput.includes('実装')) {
-                    response = '実装方法についてですね。この記事に含まれるコード部分を強調表示しました。';
+                    addNote({
+                        id: Date.now().toString(),
+                        content: '記事の要約を生成しました。',
+                        date: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+                        target: 'header'
+                    });
+                } else if (lowerInput.includes('コード') || lowerInput.includes('実装') || lowerInput.includes('python')) {
+                    response = '実装方法についてですね。この記事に含まれるコード部分を強調表示しました。この箇所を重点的に確認してみてください。';
                     setHighlightedSection('code');
+                    addNote({
+                        id: Date.now().toString(),
+                        content: '解説用のコードを強調しました。',
+                        date: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }),
+                        target: 'code'
+                    });
+                } else if (lowerInput.includes('ポイント') || lowerInput.includes('重要')) {
+                    response = 'この記事の重要なセクションを強調しました。ここを中心にお読みください。';
+                    setHighlightedSection('content');
+                    addNote({
+                        id: Date.now().toString(),
+                        content: '重要セクションを特定しました。',
+                        date: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+                    });
                 }
             }
 
