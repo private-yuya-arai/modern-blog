@@ -1,8 +1,9 @@
 .sidebar {
-  padding: 1.5rem;
-  background-color: var(--color-card-bg);
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
+  position: sticky;
+  top: 180px;
+  /* Offset for the fixed header (160px) + some extra breathing room */
+  align-self: flex-start;
+  transition: all 0.3s ease;
 }
 
 .sidebar-section {
@@ -14,11 +15,17 @@
 }
 
 .sidebar-section h3 {
-  font-size: 1.2rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
   margin-top: 0;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  color: var(--color-text);
+  font-weight: 700;
+  opacity: 0.8;
 }
 
 .category-list,

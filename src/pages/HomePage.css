@@ -16,10 +16,11 @@
 .home-page-layout {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 3rem;
+  gap: 5rem;
+  /* Increased gap for a more airy feel */
   max-width: 1400px;
-  margin: 4rem auto;
-  padding: 0 2rem 4rem;
+  margin: 0 auto 4rem;
+  padding: 4rem 2rem;
 }
 
 @media (min-width: 1024px) {
