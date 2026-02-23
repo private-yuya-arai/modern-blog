@@ -14,40 +14,46 @@ import type { CSSProperties } from 'react';
 
 type SyntaxHighlighterStyle = { [key: string]: CSSProperties };
 
-mermaid.initialize({ startOnLoad: false, theme: 'default' });
+// Initialize mermaid with htmlLabels enabled
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'default',
+  securityLevel: 'loose',
+  fontFamily: 'inherit'
+});
 
 const MermaidDiagram = ({ definition }: { definition: string }) => {
   const [svg, setSvg] = useState('');
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     const render = async () => {
       try {
-        const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
-        const { svg } = await mermaid.render(id, definition);
-        setSvg(svg);
-        setError(false);
+        // ID must start with a letter and be alphanumeric
+        const id = `mermaid-graph-${Math.random().toString(36).substring(2, 11)}`;
+        const { svg: renderedSvg } = await mermaid.render(id, definition);
+        if (isMounted) {
+          setSvg(renderedSvg);
+          setError(false);
+        }
       } catch (e) {
         console.error('Mermaid render error:', e);
-        setError(true);
+        if (isMounted) setError(true);
       }
     };
     if (definition) render();
+    return () => { isMounted = false; };
   }, [definition]);
 
   if (error) {
     return (
-      <div className="mermaid-error" style={{ border: '1px solid red', padding: '1rem', background: '#ffe6e6', color: '#c00' }}>
-        <strong>Mermaid Syntax Error</strong>
-        <div style={{ marginTop: '0.5rem', whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.85em' }}>
+      <div className="mermaid-error" style={{ border: '1px solid #ffcfcf', padding: '1.5rem', background: '#fff5f5', color: '#c00', borderRadius: '4px', margin: '1rem 0' }}>
+        <strong style={{ display: 'block', marginBottom: '1rem', color: '#800' }}>Mermaid Syntax Error</strong>
+        <p style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>The diagram definition could not be parsed. Please check the syntax.</p>
+        <div style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.85em', background: 'rgba(0,0,0,0.03)', padding: '1rem', border: '1px solid rgba(0,0,0,0.05)' }}>
           {definition}
         </div>
-        <details style={{ marginTop: '1rem' }}>
-          <summary>Debug Info (JSON)</summary>
-          <pre style={{ fontSize: '0.75em', marginTop: '0.5rem' }}>
-            {JSON.stringify(definition)}
-          </pre>
-        </details>
       </div>
     );
   }
@@ -73,11 +79,11 @@ const PostPage: React.FC = () => {
   }, [posts, loading, slug]);
 
   if (loading) {
-    return <div>Loading post...</div>;
+    return <div className="loading-container"><div className="spinner"></div></div>;
   }
 
   if (!post) {
-    return <div>Post not found.</div>;
+    return <div className="error-container">Post not found.</div>;
   }
 
   return (
@@ -99,8 +105,12 @@ const PostPage: React.FC = () => {
               const match = /language-(\w+)/.exec(className || '');
               const isMermaid = match && match[1] === 'mermaid';
 
-              // Join children accurately to avoid unintended commas or spacing
-              const rawContent = (Array.isArray(children) ? children.join('') : String(children))
+              // Improved children handling: join if array, ensure string
+              const content = Array.isArray(children)
+                ? children.map(child => typeof child === 'string' ? child : '').join('')
+                : String(children);
+
+              const rawContent = content
                 .replace(/\r\n/g, '\n')
                 .replace(/\n$/, '');
 
@@ -124,7 +134,6 @@ const PostPage: React.FC = () => {
               );
             },
             img({ src, alt, ...props }: any) {
-              // Ensure src is normalized
               return <img src={normalizePath(src)} alt={alt} {...props} />;
             }
           }}
