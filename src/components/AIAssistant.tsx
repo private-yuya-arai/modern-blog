@@ -1,3 +1,5 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAI } from '../AIContext';
 import './AIAssistant.css';
 

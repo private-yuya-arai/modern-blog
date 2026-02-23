@@ -7,6 +7,7 @@ import vscDarkPlus from 'react-syntax-highlighter/dist/esm/styles/prism/vsc-dark
 import remarkGfm from 'remark-gfm';
 import mermaid from 'mermaid';
 import { normalizePath } from '../lib/posts';
+import { useAI } from '../AIContext';
 
 import './PostPage.css';
 
@@ -34,7 +35,6 @@ const MermaidDiagram = ({ definition }: { definition: string }) => {
       if (!definition) return;
       try {
         const id = `mermaid-v11-${Math.random().toString(36).substring(2, 11)}`;
-        // Mermaid v11 render is async and returns { svg, bindFunctions }
         const { svg: renderedSvg } = await mermaid.render(id, definition);
         if (isMounted) {
           setSvg(renderedSvg);
@@ -71,7 +71,6 @@ const MermaidDiagram = ({ definition }: { definition: string }) => {
   );
 };
 
-// Robust helper to extract text from React children
 const getRawText = (children: any): string => {
   if (typeof children === 'string') return children;
   if (typeof children === 'number') return String(children);
@@ -80,7 +79,6 @@ const getRawText = (children: any): string => {
   return '';
 };
 
-// Recursive unescape to handle multi-encoded entities
 const robustUnescape = (text: string): string => {
   let prevText;
   let currentText = text;
@@ -103,8 +101,6 @@ const robustUnescape = (text: string): string => {
   return currentText;
 };
 
-import { useAI } from '../AIContext';
-
 const PostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { posts, loading } = usePosts();
@@ -117,9 +113,8 @@ const PostPage: React.FC = () => {
 
   useEffect(() => {
     setCurrentPost(post || null);
-    // 元に戻すためのタイマー
     if (highlightedSection) {
-      const timer = setTimeout(() => setHighlightedSection(null), 3000);
+      const timer = setTimeout(() => setHighlightedSection(null), 3500);
       return () => clearTimeout(timer);
     }
   }, [post, setCurrentPost, highlightedSection, setHighlightedSection]);
