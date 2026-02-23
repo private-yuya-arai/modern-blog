@@ -1,5 +1,6 @@
 import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import usePosts from '../hooks/usePosts';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -15,7 +16,7 @@ import type { CSSProperties } from 'react';
 
 type SyntaxHighlighterStyle = { [key: string]: CSSProperties };
 
-// Initialize mermaid with permissive settings
+// Initialize mermaid
 mermaid.initialize({
   startOnLoad: false,
   theme: 'default',
@@ -101,10 +102,24 @@ const robustUnescape = (text: string): string => {
   return currentText;
 };
 
+// 付箋コンポーネント
+const StickyNote = ({ content, date }: { content: string, date: string }) => (
+  <motion.div
+    className="ai-sticky-note"
+    initial={{ scale: 0, rotate: -10 }}
+    animate={{ scale: 1, rotate: 2 }}
+    transition={{ type: 'spring', damping: 15 }}
+  >
+    <div className="sticky-note-header">AI UPDATE</div>
+    <div className="sticky-note-content">{content}</div>
+    <div className="sticky-note-date">{date}</div>
+  </motion.div>
+);
+
 const PostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { posts, loading } = usePosts();
-  const { setCurrentPost, highlightedSection, setHighlightedSection } = useAI();
+  const { setCurrentPost, highlightedSection, setHighlightedSection, notes, clearNotes } = useAI();
 
   const post = useMemo(() => {
     if (loading) return null;
@@ -117,6 +132,8 @@ const PostPage: React.FC = () => {
       const timer = setTimeout(() => setHighlightedSection(null), 3500);
       return () => clearTimeout(timer);
     }
+    // ページ遷移時に付箋をクリアする場合（仕様により検討）
+    // return () => clearNotes(); 
   }, [post, setCurrentPost, highlightedSection, setHighlightedSection]);
 
   if (loading) {
@@ -129,6 +146,16 @@ const PostPage: React.FC = () => {
 
   return (
     <article className="post-full">
+      <AnimatePresence>
+        {notes.length > 0 && (
+          <div className="ai-notes-overlay">
+            {notes.map((note, idx) => (
+              <StickyNote key={note.id} content={note.content} date={note.date} />
+            ))}
+          </div>
+        )}
+      </AnimatePresence>
+
       <header className={`post-full-header ${highlightedSection === 'header' ? 'ai-highlight' : ''}`}>
         {post.image && (
           <div className="post-full-image-wrapper">

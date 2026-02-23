@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAI } from '../AIContext';
+import { useAI, AINote } from '../AIContext';
 import './AIAssistant.css';
 
 interface Message {
@@ -20,7 +20,7 @@ const KNOWLEDGE_BASE: Record<string, string> = {
 };
 
 const AIAssistant: React.FC = () => {
-    const { currentPost, setHighlightedSection } = useAI();
+    const { currentPost, setHighlightedSection, addNote } = useAI();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
         { id: '1', role: 'assistant', content: 'こんにちは！統計学やPythonについて何かお手伝いできることはありますか？' }
@@ -46,33 +46,35 @@ const AIAssistant: React.FC = () => {
         // AI Response Simulation
         setTimeout(() => {
             let response = '';
-
             const lowerInput = input.toLowerCase();
 
-            // 1. Check Knowledge Base first
             const matchedKey = Object.keys(KNOWLEDGE_BASE).find(key =>
                 lowerInput.includes(key.toLowerCase())
             );
 
             if (matchedKey) {
                 response = KNOWLEDGE_BASE[matchedKey];
+                // 知識ベースの内容が付箋としてページに貼り付く演出
+                const note: AINote = {
+                    id: Date.now().toString(),
+                    content: `${matchedKey}の解説を追記しました。`,
+                    date: new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
+                    target: lowerInput.includes('コード') ? 'code' : 'content'
+                };
+                addNote(note);
             }
-            // 2. Check current post context
             else if (currentPost) {
                 if (lowerInput.includes('要約') || lowerInput.includes('まとめて')) {
                     response = `${currentPost.title}の内容をスキャニングして要約しました。重要なポイントは「${currentPost.excerpt}」です。`;
                     setHighlightedSection('header');
-                } else if (lowerInput.includes('コード') || lowerInput.includes('実装') || lowerInput.includes('python') || lowerInput.includes('r')) {
-                    response = '実装方法についてですね。この記事に含まれるコード部分を強調表示しました。この箇所を重点的に確認してみてください。';
+                } else if (lowerInput.includes('コード') || lowerInput.includes('実装')) {
+                    response = '実装方法についてですね。この記事に含まれるコード部分を強調表示しました。';
                     setHighlightedSection('code');
-                } else if (lowerInput.includes('難しい') || lowerInput.includes('仕組み') || lowerInput.includes('概要')) {
-                    response = 'この概念を理解するために、記事の構成を見直してみましょう。主要なセクションをハイライトしました。';
-                    setHighlightedSection('content');
                 }
             }
 
             if (!response) {
-                response = 'すみません、その点については現在の私の知識では詳しくお答えできませんが、ホワイトノイズや分散、P値などの統計用語についてなら詳しく解説できます！';
+                response = '詳しくお答えできるよう学習中ですが、現在は主要な統計用語や記事の要約についてお手伝いできます！';
             }
 
             const assistantMsg: Message = { id: (Date.now() + 1).toString(), role: 'assistant', content: response };
