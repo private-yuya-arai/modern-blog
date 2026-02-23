@@ -3,10 +3,11 @@ import usePosts from '../hooks/usePosts';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import Pagination from '../components/Pagination';
 import Sidebar from '../components/Sidebar';
+import HeroSection from '../components/HeroSection';
 import { motion, Variants } from 'framer-motion';
 import './HomePage.css';
 
-const POSTS_PER_PAGE = 9; // 3x3 grid
+const POSTS_PER_PAGE = 10; // Adjusted for new layout
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -46,50 +47,17 @@ const HomePage: React.FC = () => {
   const endIndex = startIndex + POSTS_PER_PAGE;
   const currentPosts = posts.slice(startIndex, endIndex);
 
-  // Featured post (latest one on page 1)
-  const featuredPost = currentPage === 1 ? posts[0] : null;
-  const gridPosts = currentPage === 1 ? currentPosts.slice(1) : currentPosts;
+  // The very first post is the "Featured" post (Hero)
+  const latestPost = posts[0];
 
   return (
     <div className="home-page-wrapper">
-      {featuredPost && (
-        <section className="featured-section">
-          <div className="featured-container">
-            <motion.div
-              className="featured-image-container"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              {featuredPost.image ? (
-                <Link to={`/post/${featuredPost.slug}`}>
-                  <img src={featuredPost.image} alt={featuredPost.title} className="featured-image" />
-                </Link>
-              ) : (
-                <div className="featured-placeholder" />
-              )}
-            </motion.div>
-            <motion.div
-              className="featured-content"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              <span className="featured-label">LATEST STORY</span>
-              <h2 className="featured-title">
-                <Link to={`/post/${featuredPost.slug}`}>{featuredPost.title}</Link>
-              </h2>
-              <p className="featured-excerpt">{featuredPost.excerpt}</p>
-              <Link to={`/post/${featuredPost.slug}`} className="read-more-btn">READ STORY</Link>
-            </motion.div>
-          </div>
-        </section>
-      )}
+      {currentPage === 1 && latestPost && <HeroSection latestPost={latestPost} />}
 
       <div className="home-page-layout">
         <div className="main-column">
           <div className="section-header">
-            <h3>THE EDIT</h3>
+            <h3>RECENT STORIES</h3>
           </div>
 
           <motion.div
@@ -98,7 +66,7 @@ const HomePage: React.FC = () => {
             initial="hidden"
             animate="visible"
           >
-            {gridPosts.map(post => (
+            {currentPosts.map(post => (
               <motion.article
                 key={post.slug}
                 className="post-card"
@@ -122,10 +90,12 @@ const HomePage: React.FC = () => {
               </motion.article>
             ))}
           </motion.div>
-          <Pagination currentPage={currentPage} totalPages={totalPages} basePath={location.pathname} />
+
+          {totalPages > 1 && (
+            <Pagination currentPage={currentPage} totalPages={totalPages} basePath={location.pathname} />
+          )}
         </div>
 
-        {/* Sidebar could be optional or styled differently. Keeping for now but check layout. */}
         <Sidebar />
       </div>
     </div>

@@ -19,7 +19,7 @@ const Header: React.FC = () => {
           </div>
           <div className="site-branding">
             <Link to="/" className="site-title-link">
-              <h1 className="site-title video-text">ARAIBLOG</h1>
+              <h1 className="site-title">ARAIBLOG</h1>
             </Link>
             <p className="site-tagline">Data Science & Statistics</p>
           </div>
