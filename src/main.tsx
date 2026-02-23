@@ -3,7 +3,7 @@ import { Buffer } from 'buffer';
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createHashRouter, RouterProvider } from 'react-router-dom';
 
 import App from './App.tsx';
 import HomePage from './pages/HomePage.tsx';
@@ -17,7 +17,7 @@ import ContactPage from './pages/ContactPage.tsx';
 import './index.css';
 import './styles/theme.css';
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: '/',
     element: <App />,
@@ -52,9 +52,7 @@ const router = createBrowserRouter([
       },
     ],
   },
-], {
-  basename: import.meta.env.BASE_URL
-});
+]);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
