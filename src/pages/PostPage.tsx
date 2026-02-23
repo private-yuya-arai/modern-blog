@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import usePosts from '../hooks/usePosts';
 import ReactMarkdown from 'react-markdown';
@@ -14,59 +14,93 @@ import type { CSSProperties } from 'react';
 
 type SyntaxHighlighterStyle = { [key: string]: CSSProperties };
 
-// Initialize mermaid with htmlLabels enabled
+// Initialize mermaid with permissive settings
 mermaid.initialize({
   startOnLoad: false,
   theme: 'default',
   securityLevel: 'loose',
-  fontFamily: 'inherit'
+  fontFamily: 'inherit',
+  logLevel: 'error'
 });
 
 const MermaidDiagram = ({ definition }: { definition: string }) => {
   const [svg, setSvg] = useState('');
-  const [error, setError] = useState(false);
+  const [error, setError] = useState('');
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let isMounted = true;
-    const render = async () => {
+    const renderDiagram = async () => {
+      if (!definition) return;
       try {
-        // ID must start with a letter and be alphanumeric
-        const id = `mermaid-graph-${Math.random().toString(36).substring(2, 11)}`;
+        const id = `mermaid-v11-${Math.random().toString(36).substring(2, 11)}`;
+        // Mermaid v11 render is async and returns { svg, bindFunctions }
         const { svg: renderedSvg } = await mermaid.render(id, definition);
         if (isMounted) {
           setSvg(renderedSvg);
-          setError(false);
+          setError('');
         }
-      } catch (e) {
-        console.error('Mermaid render error:', e);
-        if (isMounted) setError(true);
+      } catch (err: any) {
+        console.error('Mermaid Render Error:', err);
+        if (isMounted) {
+          setError(err.message || 'Syntax Error');
+        }
       }
     };
-    if (definition) render();
+
+    renderDiagram();
     return () => { isMounted = false; };
   }, [definition]);
 
   if (error) {
     return (
-      <div className="mermaid-error" style={{ border: '1px solid #ffcfcf', padding: '1.5rem', background: '#fff5f5', color: '#c00', borderRadius: '4px', margin: '1rem 0' }}>
-        <strong style={{ display: 'block', marginBottom: '1rem', color: '#800' }}>Mermaid Syntax Error</strong>
-        <p style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>The diagram definition could not be parsed. Please check the syntax.</p>
-        <div style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.85em', background: 'rgba(0,0,0,0.03)', padding: '1rem', border: '1px solid rgba(0,0,0,0.05)' }}>
-          {definition}
-        </div>
+      <div className="mermaid-error-box">
+        <h4>Mermaid Syntax Error</h4>
+        <p className="error-msg">{error}</p>
+        <pre className="error-definition">{definition}</pre>
       </div>
     );
   }
-  return <div className="mermaid-diagram" dangerouslySetInnerHTML={{ __html: svg }} />;
+
+  return (
+    <div
+      className="mermaid-diagram-container"
+      ref={containerRef}
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  );
 };
 
-const unescapeHtml = (text: string) => {
-  return text
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, '&');
+// Robust helper to extract text from React children
+const getRawText = (children: any): string => {
+  if (typeof children === 'string') return children;
+  if (typeof children === 'number') return String(children);
+  if (Array.isArray(children)) return children.map(getRawText).join('');
+  if (children?.props?.children) return getRawText(children.props.children);
+  return '';
+};
+
+// Recursive unescape to handle multi-encoded entities
+const robustUnescape = (text: string): string => {
+  let prevText;
+  let currentText = text;
+  const entities: { [key: string]: string } = {
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&#39;': "'",
+    '&amp;': '&',
+    '&nbsp;': ' '
+  };
+
+  do {
+    prevText = currentText;
+    for (const [entity, char] of Object.entries(entities)) {
+      currentText = currentText.replace(new RegExp(entity, 'g'), char);
+    }
+  } while (currentText !== prevText);
+
+  return currentText;
 };
 
 const PostPage: React.FC = () => {
@@ -89,10 +123,22 @@ const PostPage: React.FC = () => {
   return (
     <article className="post-full">
       <header className="post-full-header">
-        <h1 className="post-full-title">{post.title}</h1>
-        <div className="post-full-meta">
-          <time dateTime={post.date}>{post.date}</time>
+        {post.image && (
+          <div className="post-full-image-wrapper">
+            <img src={post.image} alt={post.title} className="post-full-image" />
+          </div>
+        )}
+        <div className="post-header-content">
           <span className="post-full-category">{post.category}</span>
+          <h1 className="post-full-title">{post.title}</h1>
+          <div className="post-full-meta">
+            <time dateTime={post.date}>{post.date}</time>
+            <div className="post-tags">
+              {post.tags.map(tag => (
+                <span key={tag} className="post-tag">#{tag}</span>
+              ))}
+            </div>
+          </div>
         </div>
       </header>
 
@@ -105,17 +151,12 @@ const PostPage: React.FC = () => {
               const match = /language-(\w+)/.exec(className || '');
               const isMermaid = match && match[1] === 'mermaid';
 
-              // Improved children handling: join if array, ensure string
-              const content = Array.isArray(children)
-                ? children.map(child => typeof child === 'string' ? child : '').join('')
-                : String(children);
-
-              const rawContent = content
+              const rawContent = getRawText(children)
                 .replace(/\r\n/g, '\n')
                 .replace(/\n$/, '');
 
               if (!inline && isMermaid) {
-                const unescapedDefinition = unescapeHtml(rawContent);
+                const unescapedDefinition = robustUnescape(rawContent);
                 return <MermaidDiagram definition={unescapedDefinition} />;
               }
 
