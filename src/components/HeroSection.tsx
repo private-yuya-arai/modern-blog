@@ -23,23 +23,26 @@ const HeroSection: React.FC<HeroSectionProps> = ({ latestPost }) => {
         }
     }, []);
 
-    const heroImages = {
+    const fallbackImages = {
         morning: '/images/hero_morning.png',
         day: '/images/hero_day.png',
         night: '/images/hero_night.png',
     };
 
+    // Use post image if available, else use fallback gradient
+    const heroBg = latestPost.image || normalizePath(fallbackImages[timeContext]);
+
     return (
         <section className="hero-section">
             <AnimatePresence mode="wait">
                 <motion.div
-                    key={timeContext}
+                    key={heroBg}
                     className="hero-background"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 1.5 }}
-                    style={{ backgroundImage: `url(${normalizePath(heroImages[timeContext])})` }}
+                    style={{ backgroundImage: `url(${heroBg})` }}
                 />
             </AnimatePresence>
             <div className="hero-overlay">
@@ -50,12 +53,21 @@ const HeroSection: React.FC<HeroSectionProps> = ({ latestPost }) => {
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 0.8, delay: 0.5 }}
                     >
-                        <span className="hero-label">LATEST STORY</span>
-                        <h2 className="hero-title">{latestPost.title}</h2>
-                        <p className="hero-excerpt">{latestPost.excerpt}</p>
-                        <Link to={`/post/${latestPost.slug}`} className="hero-button">
-                            READ STORY
-                        </Link>
+                        <div className="hero-card-layout">
+                            {latestPost.image && (
+                                <div className="hero-card-image-wrapper">
+                                    <img src={latestPost.image} alt={latestPost.title} className="hero-card-image" />
+                                </div>
+                            )}
+                            <div className="hero-text-content">
+                                <span className="hero-label">LATEST STORY</span>
+                                <h2 className="hero-title">{latestPost.title}</h2>
+                                <p className="hero-excerpt">{latestPost.excerpt}</p>
+                                <Link to={`/post/${latestPost.slug}`} className="hero-button">
+                                    READ STORY
+                                </Link>
+                            </div>
+                        </div>
                     </motion.div>
                 </div>
             </div>
